@@ -80,6 +80,14 @@ namespace CustomerDatabaseTutorial.App.ViewModels
             AddingNewCustomer = true;
         }
 
+        public async Task ReadFile()
+        {
+            CustomerViewModel newCustomer = new CustomerViewModel(new Models.Customer());
+            NewCustomer = newCustomer;
+            await App.Repository.Customers.UpsertAsync(NewCustomer.Model);
+            AddingNewCustomer = true;
+        }
+
 
         public async Task DeleteNewCustomerAsync()
         {

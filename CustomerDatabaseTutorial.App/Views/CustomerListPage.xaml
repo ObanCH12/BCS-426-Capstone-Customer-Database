@@ -33,6 +33,11 @@
                     Icon="Refresh"
                     Label="Update"
                     ToolTipService.ToolTip="Update to server" />
+                <AppBarButton
+                    Click="{x:Bind ViewModel.ReadFile}"
+                    Icon="OpenFile"
+                    Label="Load"
+                    ToolTipService.ToolTip="Load File" />
             </CommandBar>
             <StackPanel
              x:Name="newCustomerPanel"
