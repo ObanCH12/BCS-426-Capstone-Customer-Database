@@ -28,6 +28,8 @@ namespace CustomerDatabaseTutorial.App
     sealed partial class App : Application
     {
 
+
+
         public static ITutorialRepository Repository { get; set; }
 
         /// <summary>
@@ -120,4 +122,6 @@ namespace CustomerDatabaseTutorial.App
             Repository = new SqlTutorialRepository(dbOptions);
         }
     }
+
+
 }

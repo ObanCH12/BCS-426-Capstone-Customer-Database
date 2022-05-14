@@ -12,6 +12,8 @@ namespace CustomerDatabaseTutorial.App.Repository
     {
         private CustomerContext _db;
 
+        public static object Constants { get; internal set; }
+
         public SqlCustomerRepository(CustomerContext db)
         {
             _db = db;

@@ -22,6 +22,8 @@ namespace CustomerDatabaseTutorial.App.Repository
             }
         }
 
+        public static object Constants { get; internal set; }
+
         public ICustomerRepository Customers => new SqlCustomerRepository(new CustomerContext(_dbOptions));
     }
 }

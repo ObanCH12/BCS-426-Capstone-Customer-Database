@@ -92,5 +92,10 @@ namespace CustomerDatabaseTutorial.App.ViewModels
                 }
             }
         }
+
+        public static implicit operator CustomerViewModel(AuthenticationViewModel v)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

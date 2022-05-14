@@ -1,171 +1,62 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Toolkit.Uwp.Helpers;
-using System.Runtime.CompilerServices;
-using Windows.UI.Popups;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.ViewManagement;
-using Windows.ApplicationModel.Core;
-using CustomerDatabaseTutorial.App.UserControls;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.SqlServer.Management.Smo;
-using DocumentFormat.OpenXml.Wordprocessing;
-using System.Net.Http.Headers;
-using Windows.Security.Authentication.Web.Core;
-using Windows.UI.Xaml.Media.Imaging;
-using System.Net.Http;
+//  ---------------------------------------------------------------------------------
+//  Copyright (c) Microsoft Corporation.  All rights reserved.
+// 
+//  The MIT License (MIT)
+// 
+//  Permission is hereby granted, free of charge, to any person obtaining a copy
+//  of this software and associated documentation files (the "Software"), to deal
+//  in the Software without restriction, including without limitation the rights
+//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the Software is
+//  furnished to do so, subject to the following conditions:
+// 
+//  The above copyright notice and this permission notice shall be included in
+//  all copies or substantial portions of the Software.
+// 
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+//  THE SOFTWARE.
+//  ---------------------------------------------------------------------------------
+
+using System;
 using System.IO;
+using System.Linq.Expressions;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Reflection;
+using System.Threading.Tasks;
+using CustomerDatabaseTutorial.App.UserControls;
+using Microsoft.Graph;
+using Prism.Mvvm;
+using Windows.ApplicationModel.Core;
+using Windows.Security.Authentication.Web.Core;
+using Windows.Security.Credentials;
+using Windows.Storage;
+using Windows.System;
+using Windows.UI.ApplicationSettings;
+using Windows.UI.Core;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media.Imaging;
 
 namespace CustomerDatabaseTutorial.App.ViewModels
 {
-    public class CustomerListPageViewModel : INotifyPropertyChanged
+    /// <summary>
+    /// Handles user authentication and getting user info from the Microsoft Graph API.
+    /// </summary>
+    public class AuthenticationViewModel : BindableBase
     {
-        public CustomerListPageViewModel()
+        /// <summary>
+        /// Creates a new AuthenticationViewModel for logging users in and getting their info.
+        /// </summary>
+        public AuthenticationViewModel()
         {
-            Task.Run(GetCustomerListAsync);
+            Task.Run(PrepareAsync);
+            AccountsSettingsPane.GetForCurrentView().AccountCommandsRequested += BuildAccountsPaneAsync;
         }
-
-
-
-        private ObservableCollection<CustomerViewModel> _customers = new ObservableCollection<CustomerViewModel>();
-
-        public ObservableCollection<CustomerViewModel> Customers { get => _customers; }
-
-
-        private CustomerViewModel _selectedCustomer;
-
-        private CustomerViewModel _newCustomer;
-
-
-        private bool _addingNewCustomer = false;
-        public bool EnableCommandBar => !AddingNewCustomer;
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public void OnPropertyChanged([CallerMemberName] string propertyName = null) =>
-             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-
-        public CustomerViewModel SelectedCustomer
-        {
-            get => _selectedCustomer;
-            set
-            {
-                if (_selectedCustomer != value)
-                {
-                    _selectedCustomer = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public CustomerViewModel NewCustomer
-        {
-            get => _newCustomer;
-            set
-            {
-                if (_newCustomer != value)
-                {
-                    _newCustomer = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        public bool AddingNewCustomer
-        {
-            get => _addingNewCustomer;
-            set
-            {
-                if (_addingNewCustomer != value)
-                {
-                    _addingNewCustomer = value;
-                    OnPropertyChanged();
-                }
-                OnPropertyChanged(nameof(EnableCommandBar));
-            }
-        }
-
-        
-        public bool AddingNewLogin { get; private set; }
-
-        public async Task CreateNewCustomerAsync()
-        {
-            CustomerViewModel newCustomer = new CustomerViewModel(new Models.Customer());
-            NewCustomer = newCustomer;
-            await App.Repository.Customers.UpsertAsync(NewCustomer.Model);
-            AddingNewCustomer = true;
-        }
-
-
-        public async Task DeleteNewCustomerAsync()
-        {
-            if (NewCustomer != null)
-            {
-                await App.Repository.Customers.DeleteAsync(_newCustomer.Model.Id);
-                AddingNewCustomer = false;
-            }
-        }
-
-        public async void DeleteAndUpdateAsync()
-        {
-            if (SelectedCustomer != null)
-            {
-                await App.Repository.Customers.DeleteAsync(_selectedCustomer.Model.Id);
-            }
-            await UpdateCustomersAsync();
-        }
-
-        public async Task GetCustomerListAsync()
-        {
-            var customers = await App.Repository.Customers.GetAsync();
-            if (customers == null)
-            {
-                return;
-            }
-            await DispatcherHelper.ExecuteOnUIThreadAsync(() =>
-            {
-                Customers.Clear();
-                foreach (var c in customers)
-                {
-                    Customers.Add(new CustomerViewModel(c));
-                }
-            });
-        }
-
-        public async Task SaveInitialChangesAsync()
-        {
-            await App.Repository.Customers.UpsertAsync(NewCustomer.Model);
-            await UpdateCustomersAsync();
-            AddingNewCustomer = false;
-        }
-
-        public async Task UpdateCustomersAsync()
-        {
-            foreach (var modifiedCustomer in Customers
-                .Where(x => x.IsModified).Select(x => x.Model))
-            {
-                await App.Repository.Customers.UpsertAsync(modifiedCustomer);
-            }
-            await GetCustomerListAsync();
-        }
-
-        public async void LoginClick()
-        {
-            if (Windows.Storage.ApplicationData.Current.RoamingSettings.Values.ContainsKey("IsLoggedIn") &&
-                (bool)Windows.Storage.ApplicationData.Current.RoamingSettings.Values["IsLoggedIn"])
-            {
-                await LoginAsync();
-            }
-            else
-            {
-                Windows.UI.ApplicationSettings.AccountsSettingsPane.Show();
-            }
-        }
-
-        
 
         private string _name;
 
@@ -292,11 +183,13 @@ namespace CustomerDatabaseTutorial.App.ViewModels
             set => Set(ref _showError, value);
         }
 
-
+        /// <summary>
+        /// Prepares the login sequence. 
+        /// </summary>
         public async Task PrepareAsync()
         {
-            if (Windows.Storage.ApplicationData.Current.RoamingSettings.Values.ContainsKey("IsLoggedIn") &&
-                (bool)Windows.Storage.ApplicationData.Current.RoamingSettings.Values["IsLoggedIn"])
+            if (ApplicationData.Current.RoamingSettings.Values.ContainsKey("IsLoggedIn") &&
+                (bool)ApplicationData.Current.RoamingSettings.Values["IsLoggedIn"])
             {
                 await SetVisibleAsync(vm => vm.ShowLoading);
                 await LoginAsync();
@@ -319,7 +212,7 @@ namespace CustomerDatabaseTutorial.App.ViewModels
                 string token = await GetTokenAsync();
                 if (token != null)
                 {
-                    Windows.Storage.ApplicationData.Current.RoamingSettings.Values["IsLoggedIn"] = true;
+                    ApplicationData.Current.RoamingSettings.Values["IsLoggedIn"] = true;
                     await SetUserInfoAsync(token);
                     await SetUserPhoto(token);
                     await SetVisibleAsync(vm => vm.ShowData);
@@ -350,7 +243,7 @@ namespace CustomerDatabaseTutorial.App.ViewModels
             {
                 result = await WebAuthenticationCoreManager.RequestTokenAsync(request);
             }
-            return result.ResponseStatus == Windows.Security.Authentication.Web.Core.WebTokenRequestStatus.Success ?
+            return result.ResponseStatus == WebTokenRequestStatus.Success ?
                 result.ResponseData[0].Token : null;
         }
 
@@ -360,7 +253,7 @@ namespace CustomerDatabaseTutorial.App.ViewModels
         private async Task SetUserInfoAsync(string token)
         {
             var users = await Windows.System.User.FindAllAsync();
-            var graph = new Microsoft.Graph.GraphServiceClient(new Microsoft.Graph.DelegateAuthenticationProvider(message =>
+            var graph = new GraphServiceClient(new DelegateAuthenticationProvider(message =>
             {
                 message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 return Task.CompletedTask;
@@ -369,15 +262,18 @@ namespace CustomerDatabaseTutorial.App.ViewModels
             var me = await graph.Me.Request().GetAsync();
 
             await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
-                Windows.UI.Core.CoreDispatcherPriority.Normal, async () =>
+                CoreDispatcherPriority.Normal, async () =>
                 {
                     Name = me.DisplayName;
                     Email = me.Mail;
                     Title = me.JobTitle;
-                    Domain = (string)await users[0].GetPropertyAsync(Windows.System.KnownUserProperties.DomainName);
+                    Domain = (string)await users[0].GetPropertyAsync(KnownUserProperties.DomainName);
                 });
         }
 
+        /// <summary>
+        /// Gets and processes the user's photo from the Microsoft Graph API. 
+        /// </summary>
         private async Task SetUserPhoto(string token)
         {
             using (var client = new HttpClient())
@@ -396,7 +292,7 @@ namespace CustomerDatabaseTutorial.App.ViewModels
                         await stream.CopyToAsync(memoryStream);
                         memoryStream.Position = 0;
                         await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
-                            Windows.UI.Core.CoreDispatcherPriority.Normal, async () =>
+                            CoreDispatcherPriority.Normal, async () =>
                             {
                                 Photo = new BitmapImage();
                                 await Photo.SetSourceAsync(memoryStream.AsRandomAccessStream());
@@ -409,11 +305,11 @@ namespace CustomerDatabaseTutorial.App.ViewModels
         /// <summary>
         /// Initializes the AccountsSettingsPane with AAD login.
         /// </summary>
-        private async void BuildAccountsPaneAsync(Windows.UI.ApplicationSettings.AccountsSettingsPane sender,
-            Windows.UI.ApplicationSettings.AccountsSettingsPaneCommandsRequestedEventArgs args)
+        private async void BuildAccountsPaneAsync(AccountsSettingsPane sender,
+            AccountsSettingsPaneCommandsRequestedEventArgs args)
         {
             var deferral = args.GetDeferral();
-            var command = new Windows.UI.ApplicationSettings.WebAccountProviderCommand(await GetAadProviderAsync(), async (x) =>
+            var command = new WebAccountProviderCommand(await GetAadProviderAsync(), async (x) =>
                 await LoginAsync());
             args.WebAccountProviderCommands.Add(command);
             deferral.Complete();
@@ -422,21 +318,34 @@ namespace CustomerDatabaseTutorial.App.ViewModels
         /// <summary>
         /// Gets the Microsoft ADD login provider.
         /// </summary>
-        public async Task<Windows.Security.Credentials.WebAccountProvider> GetAadProviderAsync() =>
+        public async Task<WebAccountProvider> GetAadProviderAsync() =>
             await WebAuthenticationCoreManager.FindAccountProviderAsync(
                 "https://login.microsoft.com", "organizations");
 
 
-        
-        
+        /// <summary>
+        /// Logs the user in.
+        /// </summary>
+        public async void LoginClick()
+        {
+            if (ApplicationData.Current.RoamingSettings.Values.ContainsKey("IsLoggedIn") &&
+                (bool)ApplicationData.Current.RoamingSettings.Values["IsLoggedIn"])
+            {
+                await LoginAsync();
+            }
+            else
+            {
+                AccountsSettingsPane.Show();
+            }
+        }
 
         /// <summary>
         /// Logs the user out.
         /// </summary>
         public async void LogoutClick()
         {
-            if (Windows.Storage.ApplicationData.Current.RoamingSettings.Values.ContainsKey("IsLoggedIn") &&
-                (bool)Windows.Storage.ApplicationData.Current.RoamingSettings.Values["IsLoggedIn"])
+            if (ApplicationData.Current.RoamingSettings.Values.ContainsKey("IsLoggedIn") &&
+                (bool)ApplicationData.Current.RoamingSettings.Values["IsLoggedIn"])
             {
                 ContentDialog SignoutDialog = new ContentDialog()
                 {
@@ -453,10 +362,10 @@ namespace CustomerDatabaseTutorial.App.ViewModels
         /// <summary>
         /// Shows one part of the login UI sequence and hides all the others.
         /// </summary>
-        private async Task SetVisibleAsync(System.Linq.Expressions.Expression<Func<AuthenticationViewModel, bool>> selector)
+        private async Task SetVisibleAsync(Expression<Func<AuthenticationViewModel, bool>> selector)
         {
-            var prop = (System.Reflection.PropertyInfo)((System.Linq.Expressions.MemberExpression)selector.Body).Member;
-            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            var prop = (PropertyInfo)((MemberExpression)selector.Body).Member;
+            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
                 ShowWelcome = false;
                 ShowLoading = false;
@@ -467,9 +376,9 @@ namespace CustomerDatabaseTutorial.App.ViewModels
         }
     }
 
-
-    
-
-        
+    public class VMContainer
+    {
+        public CustomerListPageViewModel VM1 { get; set; }
+        public AuthenticationControl VM2 { get; set; }
     }
-    
+}

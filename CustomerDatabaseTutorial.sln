@@ -1,9 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2027
+# Blend for Visual Studio Version 16
+VisualStudioVersion = 16.0.32413.511
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomerDatabaseTutorial.App", "CustomerDatabaseTutorial.App\CustomerDatabaseTutorial.App.csproj", "{880A424F-7CE0-490D-97C3-30ACE0A8F341}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{480A70E3-8388-4CFF-95B0-611B51CE81B6}"
+	ProjectSection(SolutionItems) = preProject
+		CustomerDatabaseTutorial.App\Repository\Constants.cs = CustomerDatabaseTutorial.App\Repository\Constants.cs
+		..\..\..\OneDrive\Documents\GitHub\Windows-appsample-customers-orders-database\ContosoRepository\CustomerDatabaseTutorial.Repository.csproj = ..\..\..\OneDrive\Documents\GitHub\Windows-appsample-customers-orders-database\ContosoRepository\CustomerDatabaseTutorial.Repository.csproj
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
