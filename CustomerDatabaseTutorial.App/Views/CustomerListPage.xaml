@@ -20,6 +20,7 @@
              Orientation="Vertical"
              RelativePanel.LeftOf="mainCommandBar">
                 <uc:AuthenticationControl/>
+                <!--Although Panel does not show up, the authentication started working-->
             </StackPanel>
             <CommandBar
                 x:Name="mainCommandBar"
