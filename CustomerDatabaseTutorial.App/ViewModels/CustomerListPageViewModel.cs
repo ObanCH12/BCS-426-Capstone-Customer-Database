@@ -3,9 +3,12 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using Windows.UI.Xaml;
 using System.Threading.Tasks;
 using Microsoft.Toolkit.Uwp.Helpers;
 using System.Runtime.CompilerServices;
+using Windows.Storage;
+using Windows.Storage.Pickers;
 
 namespace CustomerDatabaseTutorial.App.ViewModels
 {
@@ -129,6 +132,29 @@ namespace CustomerDatabaseTutorial.App.ViewModels
             await App.Repository.Customers.UpsertAsync(NewCustomer.Model);
             await UpdateCustomersAsync();
             AddingNewCustomer = false;
+        }
+        public async void PickAFileButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Clear previous returned file name, if it exists, between iterations of this scenario
+            //OutputTextBlock.Text = "";
+
+            FileOpenPicker openPicker = new FileOpenPicker();
+            openPicker.ViewMode = PickerViewMode.Thumbnail;
+            openPicker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+            openPicker.FileTypeFilter.Add(".jpg");
+            openPicker.FileTypeFilter.Add(".jpeg");
+            openPicker.FileTypeFilter.Add(".png");
+            StorageFile file = await openPicker.PickSingleFileAsync();
+            if (file != null)
+            {
+                // The StorageFile has read/write access to the picked file.
+                // See the FileAccess sample for code that uses a StorageFile to read and write.
+               // OutputTextBlock.Text = "Picked photo: " + file.Name;
+            }
+            else
+            {
+                //OutputTextBlock.Text = "Operation cancelled.";
+            }
         }
 
         public async Task UpdateCustomersAsync()

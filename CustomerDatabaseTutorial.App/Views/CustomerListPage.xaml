@@ -34,7 +34,7 @@
                     Label="Update"
                     ToolTipService.ToolTip="Update to server" />
                 <AppBarButton
-                    Click="{x:Bind ViewModel.ReadFile}"
+                    Click="{x:Bind ViewModel.PickAFileButton_Click}"
                     Icon="OpenFile"
                     Label="Load"
                     ToolTipService.ToolTip="Load File" />
@@ -76,6 +76,13 @@
                 x:Name="SaveNewCustomer"
                 Click="{x:Bind ViewModel.SaveInitialChangesAsync}"
                 Icon="Save"/>
+            </StackPanel>
+            <StackPanel
+             x:Name="FileLoad"
+             Orientation="Horizontal"
+             x:Load="{x:Bind ViewModel.AddingNewCustomer, Mode=OneWay}"
+             RelativePanel.Below="mainCommandBar">
+                
             </StackPanel>
             <telerikGrid:RadDataGrid
              x:Name="DataGrid"

@@ -7,6 +7,8 @@ using Windows.UI.Xaml.Media.Animation;
 using System;
 using Windows.UI.Core;
 using Microsoft.Toolkit.Uwp.Helpers;
+using Windows.Storage;
+using Windows.Storage.Pickers;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
