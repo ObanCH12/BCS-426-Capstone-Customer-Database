@@ -145,10 +145,7 @@ namespace CustomerDatabaseTutorial.App.ViewModels
             set => Set(ref _showWelcome, value);
         }
 
-        private void Set(ref bool showWelcome, bool value)
-        {
-            throw new NotImplementedException();
-        }
+       
 
         private bool _showLoading;
 

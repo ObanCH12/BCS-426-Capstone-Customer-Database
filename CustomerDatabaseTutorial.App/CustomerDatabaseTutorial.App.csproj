@@ -106,11 +106,12 @@
     <Compile Include="Repository\SqlCustomerRepository.cs" />
     <Compile Include="Repository\SqlTutorialRepository.cs" />
     <Compile Include="ViewModels\AuthenticationViewModel.cs" />
+    <Compile Include="ViewModels\BindableBase.cs" />
     <Compile Include="ViewModels\Converters.cs" />
     <Compile Include="ViewModels\CustomerViewModel.cs" />
     <Compile Include="ViewModels\CustomerListPageViewModel.cs" />
     <Compile Include="ViewModels\Form1.cs" />
-    <Compile Include="Views\AuthenticationControl.xaml.cs">
+    <Compile Include="UserControls\AuthenticationControl.xaml.cs">
       <DependentUpon>AuthenticationControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Class1.cs" />
@@ -139,7 +140,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="Views\AuthenticationControl.xaml">
+    <Page Include="UserControls\AuthenticationControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
