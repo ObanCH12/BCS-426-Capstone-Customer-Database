@@ -15,6 +15,14 @@ namespace CustomerDatabaseTutorial.App.ViewModels
         {
             Model = model ?? new Customer();
         }
+        public CustomerViewModel(string firstname, string lastname, string address, string company)
+        {
+            Model = new Customer();
+            Model.FirstName = firstname;
+            Model.LastName = lastname;
+            Model.Address = address;
+            Model.Company = company;
+        }
 
         /// <summary>
         /// The underlying customer model. Internal so it is 

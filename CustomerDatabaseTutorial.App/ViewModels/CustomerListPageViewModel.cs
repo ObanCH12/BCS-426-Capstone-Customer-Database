@@ -61,6 +61,7 @@ namespace CustomerDatabaseTutorial.App.ViewModels
                 }
             }
         }
+
         public bool AddingNewCustomer
         {
             get => _addingNewCustomer;
@@ -140,16 +141,52 @@ namespace CustomerDatabaseTutorial.App.ViewModels
 
             FileOpenPicker openPicker = new FileOpenPicker();
             openPicker.ViewMode = PickerViewMode.Thumbnail;
-            openPicker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
-            openPicker.FileTypeFilter.Add(".jpg");
-            openPicker.FileTypeFilter.Add(".jpeg");
-            openPicker.FileTypeFilter.Add(".png");
+            openPicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+            openPicker.FileTypeFilter.Add(".csv");
+            openPicker.FileTypeFilter.Add(".txt");
             StorageFile file = await openPicker.PickSingleFileAsync();
             if (file != null)
             {
+                string text = await Windows.Storage.FileIO.ReadTextAsync(file);
+                string[] splittext = text.Split('\n');
+                foreach (string s in splittext)
+                {
+                    string[] customer = s.Split('^');
+                    int size = customer.Length;
+                    char[] mychar = { '"' };
+                    CustomerViewModel readCustomer;
+                    //customer[1] = customer[1].Trim();
+                    if (size == 4)
+                    {
+                         readCustomer = new CustomerViewModel(customer[0],customer[1],
+                            customer[2],customer[3]);
+                        await App.Repository.Customers.UpsertAsync(readCustomer.Model);
+                        await UpdateCustomersAsync();
+
+                    }
+                    if (size == 5)
+                    {
+                         readCustomer = new CustomerViewModel(customer[0], customer[1],
+                               customer[2] + "," + customer[3],customer[4]);
+                        await App.Repository.Customers.UpsertAsync(readCustomer.Model);
+                        await UpdateCustomersAsync();
+
+                    }
+                    if (size == 6)
+                    {
+                         readCustomer = new CustomerViewModel(customer[0], customer[1],
+                               customer[2] + "," + customer[3] + "," + customer[4],customer[5]);
+                        await App.Repository.Customers.UpsertAsync(readCustomer.Model);
+                        await UpdateCustomersAsync();
+
+                    }
+                    //await App.Repository.Customers.UpsertAsync(readCustomer.Model);
+                    await UpdateCustomersAsync();
+                }
+
                 // The StorageFile has read/write access to the picked file.
                 // See the FileAccess sample for code that uses a StorageFile to read and write.
-               // OutputTextBlock.Text = "Picked photo: " + file.Name;
+                // OutputTextBlock.Text = "Picked photo: " + file.Name;
             }
             else
             {
